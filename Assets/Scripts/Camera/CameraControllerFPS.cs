@@ -30,7 +30,6 @@ public class CameraControllerFPS : MonoBehaviour
         CursorManager.instance.HideCursor();
         PauseMenu.OnPause.Subscribe(eventHandler,()=>isMoving=false);
         PauseMenu.OnResume.Subscribe(eventHandler,()=>isMoving=true);
-        inputManager.input_pause.Onpressed.Subscribe(eventHandler,()=>isMoving=!isMoving);
     }
 
     private void OnDestroy()

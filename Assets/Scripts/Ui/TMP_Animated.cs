@@ -10,7 +10,8 @@ namespace TMPro
 
     public class TMP_Animated : TextMeshProUGUI
     {
-        private float speed = 10;
+        public float speed = 1;
+        const float baseSpeedMultiplier = 20;
 
         public UEvent<string> OnDialogueAction = new UEvent<string>();
         public UEvent<string> OnDialogueEmotion = new UEvent<string>();
@@ -68,7 +69,7 @@ namespace TMPro
                             //onTextReveal.Invoke(subTexts[subCounter][visibleCounter]);
                             visibleCounter++;
                             maxVisibleCharacters++;
-                            yield return new WaitForSeconds(1f / (2f * speed));
+                            yield return new WaitForSeconds(1f / (speed* baseSpeedMultiplier));
                         }
                         visibleCounter = 0;
                     }

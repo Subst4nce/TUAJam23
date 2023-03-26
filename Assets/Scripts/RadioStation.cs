@@ -3,7 +3,7 @@ using System;
 using System.Threading.Tasks;
 using UnityEngine;
 using static SoundUtils;
-
+using static UEventHandler;
 
 [Serializable]
 public struct RadioChannel
@@ -24,6 +24,8 @@ public class RadioStation : MonoBehaviour
     public AudioSource noiseTrack;
     public float noiseVolume;
 
+    public  UEvent<string> OnRadioChanged = new UEvent<string>();
+
     RadioChannel? channelPlaying;
 
     int radioIndex = 0;
@@ -35,7 +37,7 @@ public class RadioStation : MonoBehaviour
     void Start()
     {
         PlayChannel(channels[0]);
-       
+
     }
 
 
@@ -59,6 +61,8 @@ public class RadioStation : MonoBehaviour
 
     public async void PlayChannel(RadioChannel radioChannel)
     {
+        OnRadioChanged.TryInvoke(radioChannel.name);
+
         //float initNoiseVolume= noiseTrack.volume;
         source.Stop();
         channelPlaying = radioChannel;

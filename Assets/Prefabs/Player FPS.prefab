@@ -48,8 +48,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   inputManager: {fileID: 5745216193691829287}
   mainCamera: {fileID: 5745216194207103625}
-  castWidth: 0.1
-  castLength: 25
+  castWidth: 0.05
+  castLength: 40
   castMask:
     serializedVersion: 2
     m_Bits: 1

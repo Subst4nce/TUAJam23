@@ -1,6 +1,5 @@
 
-public interface PlayerTask 
+public interface PlayerTask
 {
-
     public void BeginTask();
 }

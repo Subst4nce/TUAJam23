@@ -1,9 +1,19 @@
 using BrunoMikoski.AnimationSequencer;
+using DG.Tweening;
 using NaughtyAttributes;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using static UEventHandler;
+
+[Serializable]
+public struct DialogueSentence
+{
+    public float startDelay;
+    public string text;
+}
 
 public class DialogueWriter : MonoBehaviour
 {
@@ -11,14 +21,22 @@ public class DialogueWriter : MonoBehaviour
 
     public PlayerInputHandlerPlatformer inputHandlerPlatformer;
     public TMP_Animated sourceText;
-    public AnimationSequencerController animator;
+
     public AnimationSequencerController showIconAnimator;
     public AnimationSequencerController hideIconAnimator;
 
-    [Multiline]
-    public string[] testSentences;
+    public CanvasGroup canvasGroup;
 
-    List<string> sentencesToRead;
+    //public float dialogueAnimOffset;
+    public float dialogueAnimDuration;
+    public Ease dialogeAnimEaseIn;
+    public Ease dialogeAnimEaseOut;
+
+    public UEvent OnDialogueEnded = new UEvent();
+
+    public DialogueSentence[] testSentences;
+
+    List<DialogueSentence> sentencesToRead;
     bool waitingToContinue, isSentenceFinished, dialogueShown;
 
     UEventHandler eventHandler = new UEventHandler();
@@ -32,6 +50,7 @@ public class DialogueWriter : MonoBehaviour
     {
         sourceText.OnDialogueFinished.Subscribe(eventHandler, SentenceFinished);
     }
+
 
     private void OnDestroy()
     {
@@ -50,7 +69,16 @@ public class DialogueWriter : MonoBehaviour
         {
             if (inputHandlerPlatformer.input_pause.value > 0) return;
 
-            ReadNextSentence();
+            if (HasMoreSentecesToRead())
+            {
+                ReadNextSentence();
+            }
+            else
+            {
+                HideDialogue();
+                OnDialogueEnded.TryInvoke();
+            }
+
         }
     }
 
@@ -59,22 +87,40 @@ public class DialogueWriter : MonoBehaviour
     {
         ReadSentences(testSentences);
     }
+
+
     public bool HasMoreSentecesToRead() => sentencesToRead.Count > 0;
 
-
-    public void ReadSentences(string[] sentences)
+    public void ReadSingleSentence(string sentence)
     {
+        ReadSentences(new DialogueSentence[] { new DialogueSentence { text = sentence, startDelay = 0 } });
+    }
 
+    public void ReadSentences(DialogueSentence[] sentences)
+    {
         if (sentencesToRead == null)
         {
-            sentencesToRead = new List<string>();
+            sentencesToRead = new List<DialogueSentence>();
         }
 
         sentencesToRead.AddRange(sentences);
         ReadNextSentence();
+
     }
 
-    public void ReadNextSentence()
+    //public void ReadSentences(string[] sentences)
+    //{
+
+    //    //if (sentencesToRead == null)
+    //    //{
+    //    //    sentencesToRead = new List<string>();
+    //    //}
+
+    //    //sentencesToRead.AddRange(sentences);
+    //    //ReadNextSentence();
+    //}
+
+    private void ReadNextSentence()
     {
         isSentenceFinished = false;
 
@@ -84,45 +130,40 @@ public class DialogueWriter : MonoBehaviour
             return;
         }
 
-        ReadSentence(sentencesToRead[0]);
+        StartCoroutine(ReadSentence(sentencesToRead[0]));
     }
 
 
-    public void ReadSentence(string sentence)
+    IEnumerator ReadSentence(DialogueSentence sentence)
     {
+        if (sentence.startDelay > 0)
+        {
+            HideDialogue();
+            yield return new WaitForSeconds(sentence.startDelay);
+        }
+
         ShowDialogue();
 
-        showIconAnimator.Pause();
-        hideIconAnimator.Play();
+
 
         waitingToContinue = false;
         isSentenceFinished = false;
 
-        sourceText.ReadText(sentence);
+        sourceText.ReadText(sentence.text);
     }
 
-    void PressedNext()
-    {
-
-    }
 
     void SentenceFinished()
     {
         isSentenceFinished = true;
         sentencesToRead.RemoveAt(0);
 
-        if (HasMoreSentecesToRead())
-        {
-            waitingToContinue = true;
+        waitingToContinue = true;
 
-            showIconAnimator.Play();
+        showIconAnimator.Play();
 
-            hideIconAnimator.Pause();
-        }
-        else
-        {
-            HideDialogue();
-        }
+        hideIconAnimator.Pause();
+
     }
 
 
@@ -130,7 +171,9 @@ public class DialogueWriter : MonoBehaviour
     {
         if (dialogueShown) return;
 
-        animator.Play();
+        //transform.DOMoveY(0, dialogueAnimDuration).SetEase(dialogeAnimEaseIn);
+        canvasGroup.DOFade(1, dialogueAnimDuration).SetEase(dialogeAnimEaseIn);
+
         dialogueShown = true;
     }
 
@@ -138,7 +181,8 @@ public class DialogueWriter : MonoBehaviour
     {
         if (!dialogueShown) return;
 
-        animator.PlayBackwards();
+        canvasGroup.DOFade(0, dialogueAnimDuration).SetEase(dialogeAnimEaseOut);
+        //transform.DOMoveY(dialogueAnimOffset, dialogueAnimDuration).SetEase(dialogeAnimEaseOut);
 
         dialogueShown = false;
 

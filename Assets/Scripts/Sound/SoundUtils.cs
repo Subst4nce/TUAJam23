@@ -24,7 +24,7 @@ public static class SoundUtils
             source.Play();
 
             if (randomTime)
-                source.timeSamples = UnityEngine.Random.Range(0, sound.clip.samples);
+                source.timeSamples = UnityEngine.Random.Range(0, sound.clip.samples-1);
         }
     }
 

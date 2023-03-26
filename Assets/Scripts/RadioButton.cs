@@ -6,7 +6,6 @@ public class RadioButton :  MonoBehaviour, Interactable
 {
     public bool isNextBttn;
 
-
     public List<Renderer> renderers;
     public List<Renderer> GetInteractableMeshes() => renderers;
 
